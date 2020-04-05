@@ -41,7 +41,7 @@ func main() {
   clientStore.Create(&models.Client{
 		ID:     "3sdGzJ7rKkyZjPU15SWEqEK5Uwho9NDp",
 		Secret: "9UFhraag61zgv01AJtVeDaxivoGLYhBb",
-		Domain: "http://localhost:8084",
+		Domain: "http://localhost:4001",
 	})
 
 	manager.MapTokenStorage(tokenStore)
@@ -81,6 +81,14 @@ func main() {
 	})
 
 	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS, DELETE")
+  	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+  	w.Header().Set("Access-Control-Allow-Credentials", "true")
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+  		return
+		}
 		srv.HandleTokenRequest(w, r)
 	})
 
