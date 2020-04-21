@@ -1,7 +1,9 @@
 package main
 
 import (
+	"os"
 	"context"
+	"fmt"
 	"time"
   "encoding/json"
   "log"
@@ -16,6 +18,7 @@ import (
   "gopkg.in/oauth2.v3/errors"
 	"gopkg.in/oauth2.v3/server"
   "github.com/sampila/oauth2-server-pg/repository/rest"
+	"github.com/joho/godotenv"
 )
 
 type service struct {
@@ -27,7 +30,18 @@ var (
 )
 
 func main() {
-  dbUrl := `postgres://postgres:postgres@localhost:5432/oauth?sslmode=disable`
+	// load .env file
+  err := godotenv.Load(".env")
+
+  if err != nil {
+    log.Fatalf("Error loading .env file")
+  }
+
+  dbUrl := fmt.Sprintf(`postgres://%s:%s@localhost:%s/%s?sslmode=disable`,
+												os.Getenv("DB_USER"),
+												os.Getenv("DB_PASS"),
+												os.Getenv("DB_PORT"),
+												os.Getenv("DB_NAME"))
 	pgxConn, _ := pgx.Connect(context.TODO(), dbUrl)
 
 	manager := manage.NewDefaultManager()
@@ -41,7 +55,7 @@ func main() {
   clientStore.Create(&models.Client{
 		ID:     "3sdGzJ7rKkyZjPU15SWEqEK5Uwho9NDp",
 		Secret: "9UFhraag61zgv01AJtVeDaxivoGLYhBb",
-		Domain: "http://localhost:4001",
+		Domain: "https://staging-merchant.kolokal.com",
 	})
 
 	manager.MapTokenStorage(tokenStore)
@@ -59,7 +73,7 @@ func main() {
 		respond, restErr := s.restUsersRepo.LoginUser(username, password)
 		if restErr == nil {
 			resData := respond["data"].(map[string]interface{})
-			userID = strconv.Itoa(int(resData["ID"].(float64)))
+			userID = strconv.Itoa(int(resData["id"].(float64)))
 		}
 		return
 	})
