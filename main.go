@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"context"
 	"fmt"
 	"time"
@@ -18,7 +17,7 @@ import (
   "gopkg.in/oauth2.v3/errors"
 	"gopkg.in/oauth2.v3/server"
   "github.com/sampila/oauth2-server-pg/repository/rest"
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
 type service struct {
@@ -30,18 +29,21 @@ var (
 )
 
 func main() {
-	// load .env file
-  err := godotenv.Load(".env")
-
-  if err != nil {
-    log.Fatalf("Error loading .env file")
-  }
+	// load config file
+	viper.SetConfigType("json")
+  viper.AddConfigPath(".")
+  viper.SetConfigName("config")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Println(err)
+		log.Fatalf("Error loading config file")
+	}
 
   dbUrl := fmt.Sprintf(`postgres://%s:%s@localhost:%s/%s?sslmode=disable`,
-												os.Getenv("DB_USER"),
-												os.Getenv("DB_PASS"),
-												os.Getenv("DB_PORT"),
-												os.Getenv("DB_NAME"))
+												viper.GetString("db.user"),
+												viper.GetString("db.password"),
+												viper.GetString("db.port"),
+												viper.GetString("db.name"))
 	pgxConn, _ := pgx.Connect(context.TODO(), dbUrl)
 
 	manager := manage.NewDefaultManager()

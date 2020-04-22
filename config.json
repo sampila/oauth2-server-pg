@@ -1,0 +1,8 @@
+{
+  "db":{
+          "name" : "oauth",
+          "user" : "postgres",
+          "password": "postgres",
+          "port" : "5432"
+        }
+}

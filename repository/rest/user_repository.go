@@ -28,7 +28,7 @@ func NewRestUsersRepository() RestUsersRepository {
 
 func (r *usersRepository) LoginUser(username string, password string) (map[string]interface{}, rest_errors.RestErr) {
 	request := user.UserLoginRequest{
-		Username: username,
+		Email: username,
 		Password: password,
 	}
 
