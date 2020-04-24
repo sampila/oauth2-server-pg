@@ -44,12 +44,28 @@ func main() {
 												viper.GetString("db.password"),
 												viper.GetString("db.port"),
 												viper.GetString("db.name"))
-	pgxConn, _ := pgx.Connect(context.TODO(), dbUrl)
+
+	pgsqlConfig, err := pgx.ParseConfig(dbUrl)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	pgxPool, err := pgx.ConnectConfig(context.TODO(), pgsqlConfig)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	defer func() {
+		log.Println("Disconnecting from pgsql")
+		pgxPool.Close(context.TODO())
+	}()
 
 	manager := manage.NewDefaultManager()
 
 	// use PostgreSQL token store with pgx.Connection adapter
-	adapter := pgx4adapter.NewConn(pgxConn)
+	adapter := pgx4adapter.NewConn(pgxPool)
 	tokenStore, _ := pg.NewTokenStore(adapter, pg.WithTokenStoreGCInterval(time.Minute))
 	defer tokenStore.Close()
 
